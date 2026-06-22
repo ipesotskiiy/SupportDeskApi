@@ -1,6 +1,10 @@
+from django.utils import timezone
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 
 from tickets.models import (
+    TicketStatus,
     TicketCategory,
     Ticket,
     TicketComment,
@@ -47,6 +51,30 @@ class TicketSerializer(serializers.ModelSerializer):
             "updated_at",
             "closed_at",
         )
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        ticket_instance = self.instance
+
+        if request is None:
+            return attrs
+
+        is_staff_or_superuser = request.user.is_staff or request.user.is_superuser
+
+        if "status" in attrs and not is_staff_or_superuser:
+            raise ValidationError("Только администратор может менять статус тикетов")
+
+        if ticket_instance is not None:
+            if ticket_instance.status == TicketStatus.CLOSED and not is_staff_or_superuser:
+                raise ValidationError("Только администратор может редактировать закрытые тикеты")
+
+        if "status" in attrs and is_staff_or_superuser:
+            if attrs["status"] == TicketStatus.CLOSED:
+                attrs["closed_at"] = timezone.now()
+            else:
+                attrs["closed_at"] = None
+
+        return attrs
 
 
 class TicketCommentSerializer(serializers.ModelSerializer):
