@@ -100,3 +100,24 @@ class TicketCommentSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
+    def validate(self, attrs):
+        request = self.context.get("request")
+        comment_instance = self.instance
+
+        if request is None:
+            return attrs
+
+        is_staff_or_superuser = request.user.is_staff or request.user.is_superuser
+
+        ticket = attrs.get("ticket")
+
+        if ticket is None and comment_instance is not None:
+            ticket = comment_instance.ticket
+
+        if ticket is None:
+            return attrs
+
+        if ticket.status == TicketStatus.CLOSED and not is_staff_or_superuser:
+            raise ValidationError("Только администратор может комментировать закрытые тикеты")
+
+        return attrs
