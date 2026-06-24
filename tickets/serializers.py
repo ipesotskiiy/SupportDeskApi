@@ -117,6 +117,9 @@ class TicketCommentSerializer(serializers.ModelSerializer):
         if ticket is None:
             return attrs
 
+        if request.user.id != ticket.author_id and not is_staff_or_superuser:
+            raise ValidationError("Только администратор может комментировать тикеты других пользователей")
+
         if ticket.status == TicketStatus.CLOSED and not is_staff_or_superuser:
             raise ValidationError("Только администратор может комментировать закрытые тикеты")
 

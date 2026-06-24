@@ -3,7 +3,14 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
 
-from tickets.models import TicketCategory, Ticket, TicketStatus
+from tickets.models import (
+    TicketCategory,
+    Ticket,
+    TicketStatus,
+    TicketComment,
+    TicketPriority,
+)
+
 
 pytestmark = pytest.mark.django_db
 
@@ -73,6 +80,15 @@ def ticket_category():
     )
 
 
+@pytest.fixture()
+def payment_category():
+    return TicketCategory.objects.create(
+        name="Payments",
+        slug="payments",
+        description="Billing, invoices, refunds and payment processing problems",
+    )
+
+
 @pytest.fixture
 def user_ticket(user, ticket_category):
     return Ticket.objects.create(
@@ -80,7 +96,40 @@ def user_ticket(user, ticket_category):
         category=ticket_category,
         title="Cannot login 2",
         description="User cannot login after password reset",
-        priority="high",
+        priority=TicketPriority.HIGH,
+    )
+
+
+@pytest.fixture
+def user_ticket_medium_priority(user, ticket_category):
+    return Ticket.objects.create(
+        author=user,
+        category=ticket_category,
+        title="Cannot login 2",
+        description="User cannot login after password reset",
+        priority=TicketPriority.MEDIUM,
+    )
+
+
+@pytest.fixture
+def user_ticket_low_priority(user, ticket_category):
+    return Ticket.objects.create(
+        author=user,
+        category=ticket_category,
+        title="Cannot login 2",
+        description="User cannot login after password reset",
+        priority=TicketPriority.LOW,
+    )
+
+
+@pytest.fixture
+def payment_ticket(user, payment_category):
+    return Ticket.objects.create(
+        author=user,
+        category=payment_category,
+        title="Payment was charged twice",
+        description="Billing system created duplicate transaction",
+        priority=TicketPriority.MEDIUM,
     )
 
 
@@ -91,7 +140,7 @@ def second_user_ticket(second_user, ticket_category):
         category=ticket_category,
         title="Cannot login 3",
         description="Second user cannot login after password reset",
-        priority="high",
+        priority=TicketPriority.HIGH,
     )
 
 
@@ -102,7 +151,37 @@ def closed_user_ticket(user, ticket_category):
         category=ticket_category,
         title="Cannot login 4",
         description="Closed user cannot login after password reset",
-        priority="high",
+        priority=TicketPriority.HIGH,
         status=TicketStatus.CLOSED,
-        closed_at=timezone.now()
+        closed_at=timezone.now(),
+    )
+
+
+@pytest.fixture
+def in_progress_user_ticket(user, ticket_category):
+    return Ticket.objects.create(
+        author=user,
+        category=ticket_category,
+        title="Invoice generation is delayed",
+        description="Customer invoice is still being processed",
+        priority=TicketPriority.MEDIUM,
+        status=TicketStatus.IN_PROGRESS,
+    )
+
+
+@pytest.fixture
+def user_comment(user, user_ticket):
+    return TicketComment.objects.create(
+        ticket=user_ticket,
+        author=user,
+        text="User added more details about the login problem",
+    )
+
+
+@pytest.fixture
+def second_user_comment(second_user, second_user_ticket):
+    return TicketComment.objects.create(
+        ticket=second_user_ticket,
+        author=second_user,
+        text="Second user reported a payment confirmation issue",
     )
