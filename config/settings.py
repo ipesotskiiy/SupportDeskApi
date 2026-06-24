@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     "rest_framework",
     "django_filters",
+    "drf_spectacular",
 
     "tickets.apps.TicketsConfig",
 ]
@@ -129,4 +130,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 5,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Support Desk API",
+    "DESCRIPTION": "API for managing support tickets, categories and comments.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
