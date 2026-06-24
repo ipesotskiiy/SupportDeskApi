@@ -46,8 +46,8 @@ def test_filter_priority(
         category=ticket_category,
         title="Alpha issue",
         description="First ticket for ordering test",
-        priority="low",
-        status="open",
+        priority=TicketPriority.LOW,
+        status=TicketStatus.OPEN,
     )
 
     Ticket.objects.create(
@@ -55,8 +55,8 @@ def test_filter_priority(
         category=ticket_category,
         title="Zulu issue",
         description="Second ticket for ordering test",
-        priority="high",
-        status="open",
+        priority=TicketPriority.HIGH,
+        status=TicketStatus.OPEN,
     )
 
     response = authenticated_client.get("/api/tickets/?priority=high")
@@ -86,11 +86,16 @@ def test_filter_category(
         ticket["category"]
         for ticket in response.data["results"]
     }
+    response_ticket_ids = {
+        ticket["id"]
+        for ticket in response.data["results"]
+    }
 
 
     assert response.status_code == status.HTTP_200_OK
     assert payment_category.id in response_ticket_categories
     assert ticket_category.id not in response_ticket_categories
+    assert response_ticket_ids == {payment_ticket.id}
 
 
 def test_title_search(
@@ -121,14 +126,14 @@ def test_ordering_title(
         category=payment_category,
         title="Alpha issue",
         description="Billing system created duplicate transaction",
-        priority="medium",
+        priority=TicketPriority.MEDIUM,
     )
     zulu_ticket = Ticket.objects.create(
         author=user,
         category=payment_category,
         title="Zulu issue",
         description="Billing system created duplicate transaction",
-        priority="medium",
+        priority=TicketPriority.MEDIUM,
     )
 
     response = authenticated_client.get("/api/tickets/?ordering=title")

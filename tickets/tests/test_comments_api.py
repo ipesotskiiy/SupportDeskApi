@@ -40,7 +40,7 @@ def test_error_user_comment_ticket_another_author(authenticated_client, second_u
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-def test_staff_commet_another_ticket_author(
+def test_staff_comment_another_ticket_author(
     staff_authenticated_client,
     user_ticket,
     staff_user,
